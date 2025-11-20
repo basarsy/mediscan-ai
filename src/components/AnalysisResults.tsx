@@ -1,13 +1,15 @@
 import { CheckCircle2, AlertCircle } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
 
 interface AnalysisResultsProps {
   detected: boolean;
   confidence: number;
+  class_name?: string;
 }
 
-export const AnalysisResults = ({ detected, confidence }: AnalysisResultsProps) => {
+export const AnalysisResults = ({ detected, confidence, class_name }: AnalysisResultsProps) => {
   return (
     <Card className="p-6">
       <div className="space-y-6">
@@ -20,9 +22,19 @@ export const AnalysisResults = ({ detected, confidence }: AnalysisResultsProps) 
             )}
           </div>
           <div className="flex-1 space-y-2">
-            <h3 className="text-2xl font-semibold">
-              {detected ? "Cancer Cells Detected" : "No Cancer Detected"}
-            </h3>
+            <div className="space-y-2">
+              <h3 className="text-2xl font-semibold">
+                {detected ? "Cancer Cells Detected" : "No Cancer Detected"}
+              </h3>
+              {class_name && (
+                <div className="flex items-center gap-2 pt-1">
+                  <span className="text-sm font-medium text-muted-foreground">Detected Type:</span>
+                  <Badge variant={detected ? "destructive" : "secondary"} className="text-sm font-semibold">
+                    {class_name}
+                  </Badge>
+                </div>
+              )}
+            </div>
             <p className="text-muted-foreground">
               {detected
                 ? "The analysis has identified potential cancer cells in the provided image. Please consult with a medical professional for confirmation and next steps."

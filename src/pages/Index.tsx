@@ -10,7 +10,11 @@ import { useToast } from "@/hooks/use-toast";
 const Index = () => {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [results, setResults] = useState<{ detected: boolean; confidence: number } | null>(null);
+  const [results, setResults] = useState<{ 
+    detected: boolean; 
+    confidence: number; 
+    class_name?: string;
+  } | null>(null);
   const { toast } = useToast();
 
   const handleImageSelect = (file: File) => {
@@ -28,27 +32,56 @@ const Index = () => {
 
     setIsAnalyzing(true);
     
-    // Simulate API call - Replace this with actual backend integration
     try {
-      // Mock analysis delay
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      // Create FormData to send image file
+      const formData = new FormData();
+      formData.append('image', selectedImage);
       
-      // Mock results - Replace with actual API response
-      const mockResults = {
-        detected: Math.random() > 0.5,
-        confidence: Math.floor(Math.random() * 30) + 70,
-      };
+      // Call the backend API
+      const response = await fetch('http://localhost:5000/predict', {
+        method: 'POST',
+        body: formData,
+      });
       
-      setResults(mockResults);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to analyze image');
+      }
+      
+      const data = await response.json();
+      
+      // DEBUG: Log received data
+      console.log('=== FRONTEND RECEIVED DATA ===');
+      console.log('Full response:', data);
+      console.log('Detected:', data.detected, typeof data.detected);
+      console.log('Confidence:', data.confidence, typeof data.confidence);
+      console.log('Class name:', data.class_name);
+      console.log('Class index:', data.class_index);
+      console.log('All predictions:', data.all_predictions);
+      console.log('================================');
+      
+      // Validate response data
+      if (typeof data.detected !== 'boolean' || typeof data.confidence !== 'number') {
+        console.error('Invalid response format:', data);
+        throw new Error('Invalid response format from server');
+      }
+      
+      // Set results from API response
+      setResults({
+        detected: data.detected,
+        confidence: Math.round(data.confidence),
+        class_name: data.class_name,
+      });
       
       toast({
         title: "Analysis Complete",
-        description: "The image has been successfully analyzed.",
+        description: "Results are displayed below.",
       });
     } catch (error) {
+      console.error('Analysis error:', error);
       toast({
         title: "Analysis Failed",
-        description: "There was an error analyzing the image. Please try again.",
+        description: error instanceof Error ? error.message : "There was an error analyzing the image. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -107,7 +140,11 @@ const Index = () => {
           {/* Results Section */}
           {results && (
             <div className="space-y-4 animate-in fade-in-50 duration-500">
-              <AnalysisResults detected={results.detected} confidence={results.confidence} />
+              <AnalysisResults 
+                detected={results.detected} 
+                confidence={results.confidence}
+                class_name={results.class_name}
+              />
               <div className="flex justify-center">
                 <Button variant="outline" onClick={handleClear}>
                   Analyze Another Image

@@ -23,9 +23,9 @@ export const AnalysisResults = ({ detected, confidence, class_name }: AnalysisRe
           </div>
           <div className="flex-1 space-y-2">
             <div className="space-y-2">
-              <h3 className="text-2xl font-semibold">
-                {detected ? "Cancer Cells Detected" : "No Cancer Detected"}
-              </h3>
+            <h3 className="text-2xl font-semibold">
+              {detected ? "Cancer Cells Detected" : "No Cancer Detected"}
+            </h3>
               {class_name && (
                 <div className="flex items-center gap-2 pt-1">
                   <span className="text-sm font-medium text-muted-foreground">Detected Type:</span>
